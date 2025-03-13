@@ -1,0 +1,102 @@
+"use client";
+
+import React, { useState } from 'react';
+import axios from 'axios';
+import { assignHallAdmin } from './map'; // Import hall admin matching function
+
+function Page() {
+  const [firstName, setFirstName] = useState('');
+  const [surName, setSurName] = useState('');
+  const [idType, setIdType] = useState('');
+  const [matricNumber, setMatricNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [contactNo, setContactNo] = useState('');
+  const [dob, setDob] = useState('');
+  const [hostel, setHostel] = useState('');
+  const [gender, setGender] = useState('');
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const isFormValid = () => {
+    return (
+      firstName &&
+      surName &&
+      idType &&
+      ((idType !== 'Hall admin' && matricNumber) || idType === 'Hall admin') &&
+      password &&
+      email &&
+      dob &&
+      hostel &&
+      gender &&
+      contactNo
+    );
+  };
+
+  const handleRegister = async () => {
+    try {
+      // Assign hall admin based on selected hostel
+      const assignment = assignHallAdmin({
+        email,
+        hostelName: hostel,
+      });
+
+      if (!assignment.assignedHallAdmin) {
+        console.error("No matching hall admin found for this hostel.");
+        setErrorMessage("No hall admin found for the selected hostel.");
+        return;
+      }
+
+      // Send updated signup data to backend
+      const response = await axios.post('http://localhost:5000/Signup', {
+        firstName,
+        surName,
+        idType,
+        matricNumber,
+        password,
+        email,
+        contactNo,
+        dob,
+        hostel,
+        gender,
+        hallAdminEmail: assignment.assignedHallAdmin, // Include assigned hall admin
+      });
+
+      setRegistrationSuccess(true);
+      localStorage.setItem('idType', idType);
+      const emailDomain = email.split('@')[1];
+      localStorage.setItem('emailDomain', emailDomain);
+      window.location.href = '/landingpage';
+    } catch (error) {
+      setErrorMessage('Error registering user');
+      console.error('Error:', error);
+    }
+  };
+
+  return (
+    <div className='h-screen flex justify-center items-center bg-blue-900'>
+      <form className='bg-white p-4 rounded-lg shadow-md w-full max-w-md md:max-w-lg lg:max-w-xl'>
+        <h1 className='text-blue-800 text-3xl font-bold mb-4'>SIGNUP</h1>
+
+        {/* Existing form elements remain unchanged */}
+        
+        {registrationSuccess ? (
+          <div className="text-green-500 mb-2">Registration Successful!</div>
+        ) : (
+          <button
+            className='w-full py-2 font-bold text-white rounded-lg bg-blue-900 hover:bg-blue-800 focus:outline-none focus:shadow-outline'
+            type='button'
+            onClick={handleRegister}
+          >
+            Register
+          </button>
+        )}
+
+        {errorMessage && <div className="text-red-500">{errorMessage}</div>}
+      </form>
+    </div>
+  );
+}
+
+export default Page;

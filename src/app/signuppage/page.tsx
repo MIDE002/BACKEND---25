@@ -4,6 +4,8 @@
 
 import React, { useState } from 'react';
 import axios from 'axios';
+import { assignHallAdmin } from '../Mapping/map'; // Import hall admin matching function
+
 
 function Page() {
   const [firstName, setFirstName] = useState('');
@@ -35,35 +37,45 @@ function Page() {
     );
   };
 
-  const handleRegister = async () => {
-    try {
-      const response = await axios.post('http://localhost:5000/Signup', {
-        firstName,
-        surName,
-        idType,
-        matricNumber,
-        password,
-        email,
-        contactNo,
-        dob,
-        hostel,
-        gender,
-      });
-
-;
-
+   const handleRegister = async () => {
+      try {
+        // Assign hall admin based on selected hostel
+        const assignment = assignHallAdmin({
+          email,
+          hostelName: hostel,
+        });
   
-      setRegistrationSuccess(true);
+        if (!assignment.assignedHallAdmin) {
+          console.error("No matching hall admin found for this hostel.");
+          setErrorMessage("No hall admin found for the selected hostel.");
+          return;
+        }
   
-      localStorage.setItem('idType', idType);
-      const emailDomain = email.split('@')[1];
-      localStorage.setItem('emailDomain', emailDomain);
-      window.location.href = '/landingpage';
-    } catch (error) {
-      setErrorMessage('Error registering user');
-      console.error('Error:', error);
-    }
-  };
+        // Send updated signup data to backend
+        const response = await axios.post('http://localhost:5000/Signup', {
+          firstName,
+          surName,
+          idType,
+          matricNumber,
+          password,
+          email,
+          contactNo,
+          dob,
+          hostel,
+          gender,
+          hallAdminEmail: assignment.assignedHallAdmin, // Include assigned hall admin
+        });
+  
+        setRegistrationSuccess(true);
+        localStorage.setItem('idType', idType);
+        const emailDomain = email.split('@')[1];
+        localStorage.setItem('emailDomain', emailDomain);
+        window.location.href = '/landingpage';
+      } catch (error) {
+        setErrorMessage('Error registering user');
+        console.error('Error:', error);
+      }
+    };
   
   return (
     <div className='h-screen flex justify-center items-center bg-blue-900'>
@@ -94,12 +106,12 @@ function Page() {
             onChange={(e) => setIdType(e.target.value)}
           >
             <option value=''>Select ID</option>
-            <option value='Admin' disabled>Admin</option>
+            <option value='Admin'>Admin</option>
             {/* {ayo remember when you get to school remember to remove
              just the disabled text so you can add an admin but for now 
              you are the only one youremail:ayomide@admin.babcock.edu.ng password:12345pass  remember!!!} */}
             <option value='student'>Student</option>
-            <option value='Hall admin' disabled>Hall Admin</option>
+            <option value='Hall admin' >Hall Admin</option>
           </select>
         </div>
 
@@ -272,3 +284,20 @@ function Page() {
 }
 
 export default Page;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -128,7 +128,10 @@ export default function Home() {
   const [locationStatus, setLocationStatus] = useState("");
 
   // Hall location (latitude and longitude)
-  const HALL_LOCATION = { latitude: 32.232528, longitude: -110.961976 };
+  const HALL_LOCATION = { latitude:  6.447400, longitude: 3.390300 };
+
+  // const HALL_LOCATION = { latitude:  7.424217, longitude: 3.768272 }; // wrong location (oyo)
+
   const ALLOWED_RADIUS_KM = 0.5; // Allowed distance in km
 
   // Haversine formula for accurate distance calculation
@@ -216,7 +219,7 @@ export default function Home() {
       expireTime.setHours(23, 30, 0, 0); // Set expiration time
 
       const generateStartTime = new Date();
-      generateStartTime.setHours(7, 7, 0, 0); // Set start time
+      generateStartTime.setHours(3, 27, 0, 0); // Set start time
 
       setCanGenerate(now >= generateStartTime);
 
