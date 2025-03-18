@@ -83,8 +83,6 @@
 //     getRoomBookingById,
 // }
 
-
-
 // const RoomBooking = require('../models/RoomBookingModel');
 
 // const createRoomBooking = async (req, res) => {
@@ -115,9 +113,6 @@
 // };
 
 // // Other controller methods (getAllroomBooking, getRoomBookingById) remain unchanged
-
-
-
 
 //old code
 // const RoomBooking = require('../models/RoomBookingModel');
@@ -180,20 +175,23 @@
 //   getRoomBookingById,
 // };
 
-
-
-//new code 
+//new code
 // controllers/RoomBookingController.js
-const RoomBooking = require('../models/RoomBookingModel');
+const RoomBooking = require("../models/RoomBookingModel");
 
 const createRoomBooking = async (req, res) => {
   try {
-    const attachments = req.files?.Document ? req.files.Document.map(file => ({
-      public_id: file.filename,
-      url: `/public/${file.filename}`,
-    })) : [];
+    const attachments = req.files?.Document
+      ? req.files.Document.map((file) => ({
+          public_id: file.filename,
+          url: `/public/${file.filename}`,
+        }))
+      : [];
 
-    const newRoomBooking = await RoomBooking.create({ ...req.body, attachments });
+    const newRoomBooking = await RoomBooking.create({
+      ...req.body,
+      attachments,
+    });
     res.status(201).json(newRoomBooking);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -202,7 +200,7 @@ const createRoomBooking = async (req, res) => {
 
 const getAllroomBooking = async (req, res) => {
   try {
-    const roomBookings = await RoomBooking.find();
+    const roomBookings = await RoomBooking.find({ Hostel: req.query.Hostel }); // TODO: PASS DATA HERE TO FIND BY HOSTEL NAME
     res.status(200).json(roomBookings);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -213,7 +211,7 @@ const getRoomBookingById = async (req, res) => {
   try {
     const roomBooking = await RoomBooking.findById(req.params.id);
     if (!roomBooking) {
-      return res.status(404).json({ error: 'Room booking not found' });
+      return res.status(404).json({ error: "Room booking not found" });
     }
     res.status(200).json(roomBooking);
   } catch (error) {
@@ -224,8 +222,8 @@ const getRoomBookingById = async (req, res) => {
 const updateRoomBookingStatus = async (req, res) => {
   try {
     const { id, status } = req.body;
-    if (!['pending', 'approved', 'disapproved'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status value' });
+    if (!["pending", "approved", "disapproved"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status value" });
     }
 
     const updatedBooking = await RoomBooking.findByIdAndUpdate(
@@ -235,7 +233,7 @@ const updateRoomBookingStatus = async (req, res) => {
     );
 
     if (!updatedBooking) {
-      return res.status(404).json({ error: 'Room booking not found' });
+      return res.status(404).json({ error: "Room booking not found" });
     }
 
     res.status(200).json(updatedBooking);
@@ -248,5 +246,5 @@ module.exports = {
   createRoomBooking,
   getAllroomBooking,
   getRoomBookingById,
-  updateRoomBookingStatus
+  updateRoomBookingStatus,
 };
